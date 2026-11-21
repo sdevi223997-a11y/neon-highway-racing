@@ -2,157 +2,283 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Neon Highway Racing | Developed by Vivek</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Highway Pro: Car & Bus Simulator | Vivek Studio</title>
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; user-select: none; }
-        body { background: #050814; color: #fff; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; overflow: hidden; }
-        .header { text-align: center; margin-bottom: 10px; }
-        .header h1 { font-size: 24px; color: #00f3ff; text-shadow: 0 0 12px #00f3ff; letter-spacing: 1px; }
-        .header p { font-size: 12px; color: #facc15; font-weight: bold; }
-        .hud { display: flex; justify-content: space-between; width: 360px; max-width: 95vw; background: #0f172a; padding: 10px 16px; border-radius: 10px 10px 0 0; border: 2px solid #00f3ff; border-bottom: none; font-size: 14px; font-weight: bold; }
-        .hud span { color: #38bdf8; }
-        #nitroText { color: #facc15; }
-        .game-wrap { position: relative; width: 360px; max-width: 95vw; height: 500px; border: 2px solid #00f3ff; box-shadow: 0 0 25px rgba(0, 243, 255, 0.35); background: #0b1021; overflow: hidden; }
-        canvas { display: block; width: 100%; height: 100%; }
-        .overlay { position: absolute; inset: 0; background: rgba(5, 8, 20, 0.88); display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 20px; }
-        .overlay h2 { font-size: 28px; color: #ff007f; text-shadow: 0 0 15px #ff007f; margin-bottom: 10px; }
-        .overlay p { font-size: 14px; color: #cbd5e1; margin-bottom: 20px; line-height: 1.5; }
-        .btn { background: linear-gradient(90deg, #00f3ff, #0284c7); color: #050814; border: none; padding: 12px 28px; font-size: 16px; font-weight: bold; border-radius: 8px; cursor: pointer; box-shadow: 0 0 15px #00f3ff; }
-        .controls { display: flex; gap: 10px; width: 360px; max-width: 95vw; margin-top: 10px; }
-        .ctrl-btn { flex: 1; padding: 14px; background: #1e293b; color: #00f3ff; border: 1px solid #00f3ff; border-radius: 8px; font-size: 18px; font-weight: bold; cursor: pointer; }
-        .nitro-btn { background: #422006; color: #facc15; border-color: #facc15; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Roboto, sans-serif; user-select: none; }
+        html, body { width: 100%; height: 100%; overflow: hidden; background: #1a2e1a; }
+        canvas { display: block; width: 100vw; height: 100vh; }
+        .hud { position: fixed; top: 14px; left: 14px; right: 14px; display: flex; justify-content: space-between; align-items: center; pointer-events: none; z-index: 10; }
+        .pill { background: rgba(15, 23, 42, 0.85); color: #fff; padding: 8px 16px; border-radius: 30px; border: 1px solid rgba(255,255,255,0.2); font-weight: bold; font-size: 14px; backdrop-filter: blur(6px); box-shadow: 0 4px 12px rgba(0,0,0,0.4); }
+        .pill span { color: #facc15; }
+        .top-btns { pointer-events: auto; display: flex; gap: 8px; }
+        .icon-btn { background: rgba(15, 23, 42, 0.9); color: #fff; border: 1px solid #475569; padding: 8px 14px; border-radius: 20px; cursor: pointer; font-weight: bold; font-size: 13px; }
+        .menu-screen { position: fixed; inset: 0; background: radial-gradient(circle at center, rgba(15, 23, 42, 0.85), rgba(2, 6, 23, 0.96)); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 20; color: #fff; padding: 20px; text-align: center; backdrop-filter: blur(8px); }
+        .app-badge { background: #22c55e; color: #052e16; font-size: 11px; font-weight: 900; padding: 4px 12px; border-radius: 20px; letter-spacing: 1px; margin-bottom: 10px; }
+        .menu-screen h1 { font-size: 36px; font-weight: 900; letter-spacing: 1px; margin-bottom: 6px; text-shadow: 0 4px 20px rgba(0,0,0,0.6); }
+        .menu-screen p.sub { color: #94a3b8; font-size: 14px; margin-bottom: 24px; }
+        .garage-box { background: rgba(30, 41, 59, 0.85); border: 1px solid #334155; border-radius: 16px; padding: 18px; width: 100%; max-width: 420px; margin-bottom: 20px; }
+        .garage-title { font-size: 13px; color: #facc15; font-weight: bold; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
+        .select-row { display: flex; gap: 10px; margin-bottom: 14px; }
+        .opt-btn { flex: 1; padding: 12px; border-radius: 10px; border: 2px solid #334155; background: #0f172a; color: #cbd5e1; font-weight: bold; cursor: pointer; font-size: 14px; transition: 0.2s; }
+        .opt-btn.active { border-color: #facc15; background: #1e293b; color: #facc15; box-shadow: 0 0 12px rgba(250, 204, 21, 0.3); }
+        .play-btn { background: linear-gradient(135deg, #22c55e, #16a34a); color: #fff; border: none; padding: 16px 48px; font-size: 20px; font-weight: 900; border-radius: 14px; cursor: pointer; box-shadow: 0 8px 25px rgba(34, 197, 94, 0.45); letter-spacing: 1px; width: 100%; max-width: 420px; }
+        .controls { position: fixed; bottom: 18px; left: 18px; right: 18px; display: flex; justify-content: space-between; pointer-events: none; z-index: 15; }
+        .ctrl-group { display: flex; gap: 12px; pointer-events: auto; }
+        .pad-btn { width: 68px; height: 68px; border-radius: 50%; background: rgba(15, 23, 42, 0.75); border: 2px solid rgba(255,255,255,0.35); color: #fff; font-size: 24px; font-weight: bold; cursor: pointer; backdrop-filter: blur(4px); }
+        .pad-btn:active { background: rgba(250, 204, 21, 0.5); transform: scale(0.94); }
+        .nitro-pad { border-color: #facc15; color: #facc15; width: auto; padding: 0 22px; border-radius: 34px; font-size: 16px; }
     </style>
 </head>
 <body>
 
-<div class="header">
-    <h1>🏎️ NEON HIGHWAY RACING</h1>
-    <p>Developed by Vivek | A.S.M Convent School</p>
-</div>
-
 <div class="hud">
-    <div>SCORE: <span id="score">0</span></div>
-    <div>BEST: <span id="best">0</span></div>
-    <div id="nitroText">⚡ NITRO: READY</div>
-</div>
-
-<div class="game-wrap">
-    <canvas id="gameCanvas" width="360" height="500"></canvas>
-    <div class="overlay" id="overlay">
-        <h2 id="overTitle">NEON HIGHWAY</h2>
-        <p id="overMsg">Desktop: Use ⬅️ ➡️ Arrow Keys & SPACE for Nitro<br>Mobile: Use Buttons Below</p>
-        <button class="btn" onclick="startGame()">START RACE 🚀</button>
+    <div class="pill">SCORE: <span id="score">0</span> &nbsp;|&nbsp; BEST: <span id="best">0</span></div>
+    <div class="pill" id="speedBox">SPEED: <span>120 KM/H</span></div>
+    <div class="top-btns">
+        <button class="icon-btn" onclick="toggleFullScreen()">⛶ FULL SCREEN</button>
+        <button class="icon-btn" onclick="openMenu()">⚙️ GARAGE</button>
     </div>
 </div>
 
+<canvas id="roadCanvas"></canvas>
+
 <div class="controls">
-    <button class="ctrl-btn" onmousedown="moveLeft()" ontouchstart="moveLeft()">⬅️ LEFT</button>
-    <button class="ctrl-btn nitro-btn" onmousedown="activateNitro()" ontouchstart="activateNitro()">🔥 NITRO</button>
-    <button class="ctrl-btn" onmousedown="moveRight()" ontouchstart="moveRight()">RIGHT ➡️</button>
+    <div class="ctrl-group">
+        <button class="pad-btn" onmousedown="steer(-1)" ontouchstart="steer(-1)">◀</button>
+        <button class="pad-btn" onmousedown="steer(1)" ontouchstart="steer(1)">▶</button>
+    </div>
+    <div class="ctrl-group">
+        <button class="pad-btn nitro-pad" onmousedown="boost(true)" onmouseup="boost(false)" ontouchstart="boost(true)" ontouchend="boost(false)">🔥 TURBO</button>
+    </div>
+</div>
+
+<div class="menu-screen" id="menuScreen">
+    <div class="app-badge">★ VIVEK GAMING STUDIO • HD EDITION</div>
+    <h1 id="menuTitle">HIGHWAY PRO 3D</h1>
+    <p class="sub">Real Car & Bus Highway Simulator • A.S.M Convent School</p>
+    <div class="garage-box">
+        <div class="garage-title">1. Select Your Vehicle (गाड़ी चुनें)</div>
+        <div class="select-row">
+            <button class="opt-btn active" id="vehCar" onclick="setVehicle('car')">🏎️ Sports Car</button>
+            <button class="opt-btn" id="vehBus" onclick="setVehicle('bus')">🚌 Luxury Bus</button>
+        </div>
+        <div class="garage-title">2. Highway Weather & Settings</div>
+        <div class="select-row" style="margin-bottom:0;">
+            <button class="opt-btn active" id="envDay" onclick="setEnv('day')">☀️ Sunny Highway</button>
+            <button class="opt-btn" id="envNight" onclick="setEnv('night')">🌙 Night Lights</button>
+            <button class="opt-btn active" id="sndBtn" onclick="toggleSound()">🔊 Sound: ON</button>
+        </div>
+    </div>
+    <button class="play-btn" onclick="startGame()">DRIVE NOW ▶</button>
 </div>
 <script>
-    const canvas = document.getElementById("gameCanvas");
+    const canvas = document.getElementById("roadCanvas");
     const ctx = canvas.getContext("2d");
-    let score = 0, best = localStorage.getItem("vivekRaceBest") || 0;
+    let W, H, roadW, roadX, laneW;
+
+    function resize() {
+        W = canvas.width = window.innerWidth;
+        H = canvas.height = window.innerHeight;
+        roadW = Math.min(540, W * 0.86);
+        roadX = (W - roadW) / 2;
+        laneW = roadW / 3;
+    }
+    window.addEventListener("resize", resize);
+    resize();
+
+    let vehicleType = 'car', envMode = 'day', soundOn = true;
+    let playing = false, score = 0, best = localStorage.getItem("vivekSimBest") || 0;
     document.getElementById("best").innerText = best;
 
-    let playing = false, speed = 5, nitro = false, nitroTimer = 0, roadOffset = 0;
-    const lanes = new Array(35, 155, 275);
-    let playerLane = 1;
-    let enemies = new Array(), coins = new Array();
+    let playerLane = 1, playerX = 0, baseSpeed = 7, turbo = false, roadY = 0;
+    let traffic = new Array(), trees = new Array();
+
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    function playTone(freq, dur, type) {
+        if (!soundOn) return;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = type || 'sine';
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + dur);
+        osc.connect(gain); gain.connect(audioCtx.destination);
+        osc.start(); osc.stop(audioCtx.currentTime + dur);
+    }
+
+    function setVehicle(v) {
+        vehicleType = v;
+        document.getElementById("vehCar").classList.toggle("active", v === 'car');
+        document.getElementById("vehBus").classList.toggle("active", v === 'bus');
+        playTone(520, 0.1, 'triangle');
+    }
+    function setEnv(e) {
+        envMode = e;
+        document.getElementById("envDay").classList.toggle("active", e === 'day');
+        document.getElementById("envNight").classList.toggle("active", e === 'night');
+        playTone(600, 0.1, 'triangle');
+    }
+    function toggleSound() {
+        soundOn = !soundOn;
+        document.getElementById("sndBtn").innerText = soundOn ? "🔊 Sound: ON" : "🔇 Sound: OFF";
+        document.getElementById("sndBtn").classList.toggle("active", soundOn);
+    }
+    function toggleFullScreen() {
+        if (!document.fullscreenElement) document.documentElement.requestFullscreen().catch(()=>{});
+        else document.exitFullscreen();
+    }
+    function openMenu() {
+        playing = false;
+        document.getElementById("menuScreen").style.display = "flex";
+    }
 
     function startGame() {
-        score = 0; speed = 5; playerLane = 1; enemies = new Array(); coins = new Array();
-        nitro = false; nitroTimer = 0; playing = true;
-        document.getElementById("overlay").style.display = "none";
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        score = 0; baseSpeed = 7; playerLane = 1;
+        playerX = roadX + laneW * 1.5;
+        traffic = new Array(); trees = new Array();
+        for (let i = 0; i < 14; i++) trees.push({ y: i * 90, side: i % 2 === 0 ? -1 : 1 });
+        playing = true;
+        document.getElementById("menuScreen").style.display = "none";
+        playTone(300, 0.25, 'sawtooth');
         loop();
     }
 
-    function moveLeft() { if (playing && playerLane > 0) playerLane--; }
-    function moveRight() { if (playing && playerLane < 2) playerLane++; }
-    function activateNitro() {
-        if (playing && !nitro && nitroTimer <= 0) {
-            nitro = true; nitroTimer = 180;
-        }
+    function steer(dir) {
+        if (!playing) return;
+        playerLane = Math.max(0, Math.min(2, playerLane + dir));
+        playTone(400, 0.06, 'sine');
     }
+    function boost(state) { turbo = state; if (state && playing) playTone(180, 0.2, 'sawtooth'); }
 
     document.addEventListener("keydown", (e) => {
-        if (e.key === "ArrowLeft") moveLeft();
-        if (e.key === "ArrowRight") moveRight();
-        if (e.key === " ") activateNitro();
+        if (e.key === "ArrowLeft" || e.key === "a") steer(-1);
+        if (e.key === "ArrowRight" || e.key === "d") steer(1);
+        if (e.key === " " || e.key === "ArrowUp") boost(true);
+    });
+    document.addEventListener("keyup", (e) => {
+        if (e.key === " " || e.key === "ArrowUp") boost(false);
     });
 
-    function drawCar(x, y, color, glow, isPlayer) {
+    function drawRealisticVehicle(x, y, w, h, color, type, isPlayer) {
         ctx.save();
-        ctx.shadowBlur = 15; ctx.shadowColor = glow;
-        ctx.fillStyle = color;
-        ctx.beginPath(); ctx.roundRect(x, y, 50, 85, 10); ctx.fill();
-        ctx.fillStyle = "#050814";
-        ctx.fillRect(x + 8, y + (isPlayer ? 18 : 48), 34, 20);
-        if (isPlayer && nitro) {
-            ctx.fillStyle = "#facc15";
-            ctx.beginPath(); ctx.arc(x + 15, y + 92, 7, 0, Math.PI * 2); ctx.arc(x + 35, y + 92, 7, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = "rgba(0,0,0,0.45)";
+        ctx.beginPath(); ctx.roundRect(x - w/2 + 6, y + 8, w, h, 12); ctx.fill();
+
+        if (envMode === 'night') {
+            let grad = ctx.createLinearGradient(x, y, x, isPlayer ? y - 160 : y + h + 140);
+            grad.addColorStop(0, isPlayer ? "rgba(255,255,220,0.45)" : "rgba(255,80,80,0.4)");
+            grad.addColorStop(1, "rgba(255,255,255,0)");
+            ctx.fillStyle = grad;
+            ctx.beginPath();
+            if (isPlayer) { ctx.moveTo(x - w*0.35, y); ctx.lineTo(x + w*0.35, y); ctx.lineTo(x + w*1.1, y - 160); ctx.lineTo(x - w*1.1, y - 160); }
+            else { ctx.moveTo(x - w*0.35, y + h); ctx.lineTo(x + w*0.35, y + h); ctx.lineTo(x + w*0.9, y + h + 130); ctx.lineTo(x - w*0.9, y + h + 130); }
+            ctx.fill();
         }
+
+        ctx.fillStyle = color;
+        ctx.beginPath(); ctx.roundRect(x - w/2, y, w, h, type === 'bus' ? 8 : 14); ctx.fill();
+        ctx.strokeStyle = "rgba(255,255,255,0.35)"; ctx.lineWidth = 2; ctx.stroke();
+
+        ctx.fillStyle = "#0f172a";
+        if (type === 'bus') {
+            ctx.fillRect(x - w/2 + 6, y + 10, w - 12, 22);
+            ctx.fillStyle = "#e2e8f0";
+            for (let wy = y + 42; wy < y + h - 25; wy += 24) {
+                ctx.fillRect(x - w/2 + 5, wy, 5, 14);
+                ctx.fillRect(x + w/2 - 10, wy, 5, 14);
+            }
+        } else {
+            ctx.beginPath(); ctx.roundRect(x - w/2 + 7, y + h*0.22, w - 14, h*0.24, 6); ctx.fill();
+            ctx.beginPath(); ctx.roundRect(x - w/2 + 9, y + h*0.62, w - 18, h*0.18, 5); ctx.fill();
+        }
+
+        ctx.fillStyle = isPlayer ? "#fef08a" : "#ef4444";
+        let ly = isPlayer ? y + 2 : y + h - 6;
+        ctx.fillRect(x - w/2 + 6, ly, 10, 5);
+        ctx.fillRect(x + w/2 - 16, ly, 10, 5);
         ctx.restore();
     }
 
     function loop() {
         if (!playing) return;
-        ctx.clearRect(0, 0, 360, 500);
+        let curSpeed = turbo ? baseSpeed * 1.75 : baseSpeed;
+        document.getElementById("speedBox").innerHTML = "SPEED: <span>" + Math.round(curSpeed * 18) + " KM/H</span>";
 
-        let curSpeed = nitro ? speed * 1.8 : speed;
-        if (nitro) {
-            nitroTimer--;
-            document.getElementById("nitroText").innerText = "🔥 NITRO ON!";
-            if (nitroTimer <= 0) nitro = false;
-        } else {
-            document.getElementById("nitroText").innerText = "⚡ NITRO: READY";
+        ctx.fillStyle = envMode === 'day' ? "#15803d" : "#062010";
+        ctx.fillRect(0, 0, W, H);
+
+        ctx.fillStyle = envMode === 'day' ? "#334155" : "#1e293b";
+        ctx.fillRect(roadX, 0, roadW, H);
+
+        roadY = (roadY + curSpeed) % 60;
+        for (let y = -60; y < H + 60; y += 30) {
+            ctx.fillStyle = (Math.floor((y + roadY) / 30) % 2 === 0) ? "#ef4444" : "#ffffff";
+            ctx.fillRect(roadX - 10, y + roadY, 10, 30);
+            ctx.fillRect(roadX + roadW, y + roadY, 10, 30);
         }
 
-        roadOffset = (roadOffset + curSpeed) % 40;
-        ctx.strokeStyle = "#1e293b"; ctx.lineWidth = 4; ctx.setLineDash(new Array(20, 20));
-        ctx.lineDashOffset = -roadOffset;
-        ctx.beginPath(); ctx.moveTo(120, 0); ctx.lineTo(120, 500); ctx.moveTo(240, 0); ctx.lineTo(240, 500); ctx.stroke();
-        ctx.setLineDash(new Array());
+        ctx.strokeStyle = "rgba(255,255,255,0.65)"; ctx.lineWidth = 4; ctx.setLineDash(new Array(35, 35));
+        ctx.lineDashOffset = -roadY * 2;
+        ctx.beginPath();
+        ctx.moveTo(roadX + laneW, 0); ctx.lineTo(roadX + laneW, H);
+        ctx.moveTo(roadX + laneW * 2, 0); ctx.lineTo(roadX + laneW * 2, H);
+        ctx.stroke(); ctx.setLineDash(new Array());
 
-        let px = lanes[playerLane], py = 390;
-        drawCar(px, py, "#00f3ff", "#00f3ff", true);
+        trees.forEach(t => {
+            t.y += curSpeed;
+            if (t.y > H + 50) t.y = -50;
+            let tx = t.side === -1 ? roadX - 55 : roadX + roadW + 55;
+            if (tx > 15 && tx < W - 15) {
+                ctx.fillStyle = envMode === 'day' ? "#14532d" : "#052e16";
+                ctx.beginPath(); ctx.arc(tx, t.y, 24, 0, Math.PI * 2); ctx.fill();
+                ctx.fillStyle = envMode === 'day' ? "#22c55e" : "#166534";
+                ctx.beginPath(); ctx.arc(tx - 4, t.y - 4, 16, 0, Math.PI * 2); ctx.fill();
+            }
+        });
 
-        if (Math.random() < 0.025) {
+        let targetX = roadX + laneW * (playerLane + 0.5);
+        playerX += (targetX - playerX) * 0.22;
+        let pw = vehicleType === 'bus' ? 58 : 50;
+        let ph = vehicleType === 'bus' ? 125 : 92;
+        let py = H - ph - 35;
+        drawRealisticVehicle(playerX, py, pw, ph, vehicleType === 'bus' ? "#eab308" : "#0ea5e9", vehicleType, true);
+
+        if (Math.random() < 0.024) {
             let l = Math.floor(Math.random() * 3);
-            if (!enemies.some(en => en.y < 140)) enemies.push({ lane: l, y: -90 });
-        }
-        if (Math.random() < 0.02) {
-            let l = Math.floor(Math.random() * 3);
-            coins.push({ lane: l, y: -30 });
+            if (!traffic.some(tr => tr.y < 180)) {
+                let isBus = Math.random() < 0.35;
+                let colors = new Array("#ef4444", "#f97316", "#a855f7", "#ec4899", "#14b8a6");
+                traffic.push({
+                    lane: l, y: -150, type: isBus ? 'bus' : 'car',
+                    w: isBus ? 58 : 48, h: isBus ? 125 : 90,
+                    color: colors[Math.floor(Math.random() * colors.length)],
+                    spd: curSpeed * (0.45 + Math.random() * 0.25)
+                });
+            }
         }
 
-        for (let i = enemies.length - 1; i >= 0; i--) {
-            let en = enemies[i]; en.y += curSpeed;
-            let ex = lanes[en.lane];
-            drawCar(ex, en.y, "#ff007f", "#ff007f", false);
-            if (en.lane === playerLane && en.y + 80 > py && en.y < py + 80) {
+        for (let i = traffic.length - 1; i >= 0; i--) {
+            let tr = traffic[i];
+            tr.y += tr.spd;
+            let tx = roadX + laneW * (tr.lane + 0.5);
+            drawRealisticVehicle(tx, tr.y, tr.w, tr.h, tr.color, tr.type, false);
+
+            if (Math.abs(playerX - tx) < (pw + tr.w) * 0.42 && py < tr.y + tr.h - 10 && py + ph > tr.y + 10) {
                 playing = false;
-                if (score > best) { best = score; localStorage.setItem("vivekRaceBest", best); document.getElementById("best").innerText = best; }
-                document.getElementById("overTitle").innerText = "💥 CRASHED!";
-                document.getElementById("overMsg").innerText = "Final Score: " + score + " | Best: " + best;
-                document.getElementById("overlay").style.display = "flex";
+                playTone(90, 0.5, 'sawtooth');
+                if (score > best) { best = score; localStorage.setItem("vivekSimBest", best); document.getElementById("best").innerText = best; }
+                document.getElementById("menuTitle").innerText = "💥 ACCIDENT! SCORE: " + score;
+                document.getElementById("menuScreen").style.display = "flex";
                 return;
             }
-            if (en.y > 520) { enemies.splice(i, 1); score += 10; speed += 0.05; }
+            if (tr.y > H + 160) {
+                traffic.splice(i, 1);
+                score += 15; baseSpeed += 0.04;
+                document.getElementById("score").innerText = score;
+            }
         }
-
-        for (let i = coins.length - 1; i >= 0; i--) {
-            let c = coins[i]; c.y += curSpeed;
-            let cx = lanes[c.lane] + 25;
-            ctx.fillStyle = "#facc15"; ctx.beginPath(); ctx.arc(cx, c.y, 12, 0, Math.PI * 2); ctx.fill();
-            if (c.lane === playerLane && c.y + 12 > py && c.y - 12 < py + 85) {
-                score += 25; coins.splice(i, 1);
-            } else if (c.y > 520) coins.splice(i, 1);
-        }
-
-        document.getElementById("score").innerText = score;
         requestAnimationFrame(loop);
     }
 </script>
